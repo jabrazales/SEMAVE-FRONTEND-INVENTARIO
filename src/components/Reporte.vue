@@ -259,8 +259,8 @@
       <!-- Footer profesional -->
       <footer class="mt-12 py-6 bg-gradient-to-r from-orange-100 via-gray-50 to-orange-200 border-t border-orange-200 text-center rounded-b-xl shadow-inner">
         <p class="text-sm text-gray-700 font-medium">
-          Desarrollado por Josue Andres Brazales Cango<br>
-          Ingeniero en Tecnologías de la Información
+          Desarrollado por MutanTech<br>
+          Todos los derechos reservados.
         </p>
       </footer>
     </div>
