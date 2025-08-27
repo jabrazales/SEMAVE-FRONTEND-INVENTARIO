@@ -23,7 +23,7 @@
           </h2>
         </div>
         <form @submit.prevent="registrarMovimiento" class="p-6">
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Producto</label>
               <select 
@@ -32,7 +32,19 @@
                 required
               >
                 <option disabled value="">Seleccionar producto</option>
-                <option v-for="p in productos" :key="p.id" :value="p.id">{{ p.nombre }}</option>
+                <option v-for="p in productos" :key="p.id" :value="p.id">{{ p.codigo }} - {{ p.tipo }}</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Aplicación</label>
+              <select 
+                v-model="nuevo.aplicacionId" 
+                :disabled="!nuevo.productoId"
+                class="block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900"
+                required
+              >
+                <option disabled value="">Seleccionar aplicación</option>
+                <option v-for="app in aplicacionesProductoSeleccionado" :key="app.id" :value="app.id">{{ app.nombre }}</option>
               </select>
             </div>
             <div>
@@ -62,6 +74,18 @@
                   <span class="text-gray-500 text-sm">unidades</span>
                 </div>
               </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Origen/Destino</label>
+              <select 
+                v-model="nuevo.origen_destino" 
+                class="block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900"
+                required
+              >
+                <option disabled value="">Seleccionar</option>
+                <option value="percha">Percha</option>
+                <option value="caja">Caja</option>
+              </select>
             </div>
             <div class="flex items-end">
               <button 
@@ -157,10 +181,15 @@
                 </div>
                 <div>
                   <h4 class="text-lg font-semibold text-gray-900">
-                    {{ m.Producto && m.Producto.nombre ? m.Producto.nombre : 'Sin nombre' }}
+                    <span v-if="m.Producto">
+                      {{ m.Producto.codigo ? m.Producto.codigo : '' }}
+                      <span v-if="m.Producto.tipo"> - {{ m.Producto.tipo }}</span>
+                    </span>
+                    <span v-if="m.Aplicacion && m.Aplicacion.nombre"> - {{ m.Aplicacion.nombre }}</span>
                   </h4>
                   <p class="text-sm text-gray-500">
                     {{ m.tipo === 'entrada' ? 'Entrada' : 'Salida' }} de inventario
+                    <span v-if="m.origen_destino"> ({{ m.origen_destino === 'percha' ? 'Percha' : m.origen_destino === 'caja' ? 'Caja' : m.origen_destino }})</span>
                   </p>
                 </div>
               </div>
@@ -219,11 +248,15 @@ export default {
     return {
       movimientos: [],
       productos: [],
-      nuevo: { productoId: '', tipo: '', cantidad: 0 },
+  nuevo: { productoId: '', aplicacionId: '', tipo: '', cantidad: 0, origen_destino: '' },
       movimientosFiltrados: []
     }
   },
   computed: {
+    aplicacionesProductoSeleccionado() {
+      const prod = this.productos.find(p => p.id === this.nuevo.productoId);
+      return prod && prod.aplicaciones ? prod.aplicaciones : [];
+    },
     totalEntradas() {
       return this.movimientosFiltrados.filter(m => m.tipo === 'entrada').reduce((sum, m) => sum + m.cantidad, 0);
     },
@@ -232,6 +265,10 @@ export default {
     }
   },
   methods: {
+    aplicacionesProductoSeleccionado() {
+      const prod = this.productos.find(p => p.id === this.nuevo.productoId);
+      return prod && prod.aplicaciones ? prod.aplicaciones : [];
+    },
     async cargarMovimientos() {
       try {
         const res = await getMovimientos();
@@ -248,10 +285,20 @@ export default {
       }
     },
     
-    async cargarProductos() {
+  async cargarProductos() {
       try {
         const res = await getProductos();
-        this.productos = res.data;
+        // Mapear aplicaciones para compatibilidad con la UI y mostrar stock correctamente
+        this.productos = res.data.map(p => ({
+          ...p,
+          aplicaciones: Array.isArray(p.aplicaciones)
+            ? p.aplicaciones.map(app => ({
+                id: app.id,
+                nombre: app.nombre,
+                stock: app.ProductoAplicacion && typeof app.ProductoAplicacion.stock !== 'undefined' ? app.ProductoAplicacion.stock : (app.stock ?? 0)
+              }))
+            : []
+        }));
       } catch (error) {
         console.error('Error al cargar productos:', error);
         Swal.fire({
@@ -263,8 +310,8 @@ export default {
       }
     },
     
-    async registrarMovimiento() {
-      if (!this.nuevo.productoId || !this.nuevo.tipo || this.nuevo.cantidad <= 0) {
+  async registrarMovimiento() {
+  if (!this.nuevo.productoId || !this.nuevo.aplicacionId || !this.nuevo.tipo || this.nuevo.cantidad <= 0 || !this.nuevo.origen_destino) {
         Swal.fire({
           title: 'Datos incompletos',
           text: 'Por favor, complete todos los campos correctamente',
@@ -273,10 +320,15 @@ export default {
         });
         return;
       }
-      
       try {
-        await createMovimiento(this.nuevo);
-        this.nuevo = { productoId: '', tipo: '', cantidad: 0 };
+        await createMovimiento({
+          productoId: this.nuevo.productoId,
+          aplicacionId: this.nuevo.aplicacionId,
+          tipo: this.nuevo.tipo,
+          cantidad: this.nuevo.cantidad,
+          origen_destino: this.nuevo.origen_destino
+        });
+        this.nuevo = { productoId: '', aplicacionId: '', tipo: '', cantidad: 0, origen_destino: '' };
         await this.cargarMovimientos();
         Swal.fire({
           title: 'Éxito',
@@ -296,6 +348,16 @@ export default {
         });
       }
     },
+
+  // ...existing code...
+  watch: {
+    'nuevo.productoId'(nuevoVal, oldVal) {
+      // Limpiar la aplicación seleccionada si se cambia el producto
+      if (nuevoVal !== oldVal) {
+        this.nuevo.aplicacionId = '';
+      }
+    }
+  },
 
     scrollToForm() {
       // Función para scroll hasta el formulario cuando no hay movimientos

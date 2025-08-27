@@ -29,7 +29,7 @@
         </div>
       </div>
 
-      <!-- Formulario para agregar producto -->
+      <!-- Formulario para agregar producto con aplicaciones dinámicas -->
       <div class="bg-white rounded-xl shadow-lg border border-gray-200 mb-8">
         <div class="px-6 py-4 border-b border-gray-200">
           <h2 class="text-xl font-semibold text-gray-800 flex items-center">
@@ -40,32 +40,52 @@
           </h2>
         </div>
         <form @submit.prevent="agregarProducto" class="p-6">
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="md:col-span-2">
-              <label class="block text-sm font-medium text-gray-700 mb-2">Nombre del Producto</label>
-              <input 
-                v-model="nuevo.nombre" 
-                placeholder="Ej: Filtro de aceite, Amortiguador delantero..." 
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Código</label>
+              <input
+                v-model="nuevo.codigo"
+                placeholder="Ej: PH 3593"
                 class="block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900"
                 required
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Stock</label>
-              <div class="relative">
-                <input 
-                  v-model.number="nuevo.stock" 
-                  type="number" 
-                  placeholder="0" 
-                  min="0"
-                  class="block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900"
-                  required
-                />
-                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                  <span class="text-gray-500 text-sm">unidades</span>
-                </div>
-              </div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Tipo</label>
+              <input
+                v-model="nuevo.tipo"
+                placeholder="Ej: FILTRO ACEITE"
+                class="block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900"
+                required
+              />
             </div>
+          </div>
+          <div class="mt-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Aplicaciones (autos y stock por aplicación)</label>
+            <div v-for="(app, idx) in nuevo.aplicaciones" :key="idx" class="flex gap-2 mb-2 items-end">
+              <div class="flex-1">
+                <label class="block text-xs text-gray-500 mb-1">Aplicación</label>
+                <input v-model="app.nombre" placeholder="Nombre de la aplicación" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" required />
+              </div>
+              <div>
+                <label class="block text-xs text-gray-500 mb-1">Stock Percha</label>
+                <input v-model.number="app.stock_percha" type="number" min="0" placeholder="Percha" class="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" required />
+              </div>
+              <div>
+                <label class="block text-xs text-gray-500 mb-1">Stock Caja</label>
+                <input v-model.number="app.stock_caja" type="number" min="0" placeholder="Caja" class="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" required />
+              </div>
+              <div>
+                <label class="block text-xs text-gray-500 mb-1">Línea</label>
+                <input v-model.number="app.linea" type="number" min="0" placeholder="Línea" class="w-20 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" required />
+              </div>
+              <div>
+                <label class="block text-xs text-gray-500 mb-1">Código Aplicación</label>
+                <input v-model="app.codigo_aplicacion" placeholder="Código único" class="w-32 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" required />
+              </div>
+              <button type="button" @click="nuevo.aplicaciones.splice(idx,1)" class="text-red-500 hover:text-red-700 font-bold mb-5">✕</button>
+            </div>
+            <button type="button" @click="nuevo.aplicaciones.push({nombre:'',stock_percha:0,stock_caja:0,linea:0,codigo_aplicacion:''})" class="mt-2 px-4 py-2 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200">+ Agregar Aplicación</button>
           </div>
           <div class="mt-6 flex justify-end">
             <button 
@@ -115,140 +135,99 @@
           </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
-          <div class="flex items-center">
-            <div class="flex-shrink-0">
-              <div class="flex items-center justify-center h-12 w-12 rounded-lg bg-red-100">
-                <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
-                </svg>
-              </div>
-            </div>
-            <div class="ml-4">
-              <p class="text-2xl font-bold text-gray-900">{{ productosStockBajo }}</p>
-              <p class="text-sm font-medium text-gray-500">Stock Bajo</p>
-            </div>
-          </div>
-        </div>
       </div>
 
-      <!-- Lista de productos -->
-      <div v-if="productos.length > 0" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        <div 
-          v-for="producto in productosFiltrados" 
-          :key="producto.id"
-          class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-shadow duration-200"
-          :class="{ 'border-l-4 border-l-red-500': producto.stock < 10 }"
-        >
-          <div v-if="editando !== producto.id" class="p-6">
-            <!-- Header del producto -->
-            <div class="flex items-start justify-between mb-4">
-              <div class="flex items-center">
-                <div class="flex-shrink-0">
-                  <div class="flex items-center justify-center h-10 w-10 rounded-lg bg-gray-100">
-                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 00-2 2v2m0 0V9a2 2 0 012-2h14a2 2 0 012 2v2M7 7V6a3 3 0 013-3h4a3 3 0 013 3v1"/>
-                    </svg>
-                  </div>
-                </div>
-                <div class="ml-3">
-                  <h3 class="text-lg font-semibold text-gray-900">{{ producto.nombre }}</h3>
-                  <p class="text-sm text-gray-500">Código: #{{ producto.id }}</p>
-                </div>
-              </div>
-              <div v-if="producto.stock < 10" class="flex-shrink-0">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                  <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                  </svg>
-                  Stock Bajo
-                </span>
-              </div>
+      <!-- Tabla de productos: cada producto con su propia tabla de aplicaciones -->
+      <div v-if="productos.length > 0" class="space-y-8">
+        <div v-for="producto in productosFiltrados" :key="producto.id" class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-x-auto">
+          <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+            <div>
+              <span class="inline-block px-3 py-1 rounded-full bg-orange-100 text-orange-700 text-xs font-bold mr-2">Código: {{ producto.codigo }}</span>
+              <span class="inline-block px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-bold mr-2">Tipo: {{ producto.tipo }}</span>
+              <span class="inline-block px-3 py-1 rounded-full bg-gray-200 text-gray-800 text-xs font-bold">Total aplicaciones: {{ producto.aplicaciones.length }}</span>
             </div>
-
-            <!-- Stock info -->
-            <div class="mb-6">
-              <div class="flex items-center justify-between">
-                <span class="text-sm font-medium text-gray-500">Stock disponible</span>
-                <span class="text-2xl font-bold" :class="producto.stock < 10 ? 'text-red-600' : 'text-green-600'">
-                  {{ producto.stock }}
-                </span>
-              </div>
-              <div class="mt-2">
-                <div class="flex items-center text-sm text-gray-500">
-                  <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-                  </svg>
-                  unidades en almacén
-                </div>
-              </div>
-            </div>
-
-            <!-- Acciones -->
-            <div class="flex justify-end space-x-3">
-              <button 
-                @click="editarProducto(producto)" 
-                class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors duration-200"
-              >
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                </svg>
-                Editar
+            <div class="flex gap-2">
+              <button @click="editarProducto(producto)" class="p-2 rounded hover:bg-orange-100" title="Editar">
+                <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
               </button>
-              <button 
-                @click="eliminarProducto(producto.id)" 
-                class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200"
-              >
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                </svg>
-                Eliminar
+              <button @click="eliminarProducto(producto.id)" class="p-2 rounded hover:bg-red-100" title="Eliminar">
+                <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
               </button>
             </div>
           </div>
-
-          <!-- Modo edición -->
-          <div v-else class="p-6">
-            <div class="space-y-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Nombre del producto</label>
-                <input 
-                  v-model="editado.nombre" 
-                  class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900"
-                  placeholder="Nombre del producto"
-                />
+          <div v-if="editando === producto.id" class="p-6 bg-orange-50 border-t border-orange-200">
+            <form @submit.prevent="guardarEdicion(producto.id)">
+              <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Código</label>
+                  <input v-model="editado.codigo" class="block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900" required />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Tipo</label>
+                  <input v-model="editado.tipo" class="block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900" required />
+                </div>
               </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Stock</label>
-                <input 
-                  v-model.number="editado.stock" 
-                  type="number"
-                  min="0"
-                  class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900"
-                  placeholder="Stock"
-                />
+              <div class="mt-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Aplicaciones</label>
+                <div v-for="(app, idx) in editado.aplicaciones" :key="idx" class="flex gap-2 mb-2 items-end">
+                  <div class="flex-1">
+                    <label class="block text-xs text-gray-500 mb-1">Aplicación</label>
+                    <input v-model="app.nombre" placeholder="Nombre de la aplicación" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" required />
+                  </div>
+                  <div>
+                    <label class="block text-xs text-gray-500 mb-1">Stock Percha</label>
+                    <input v-model.number="app.stock_percha" type="number" min="0" placeholder="Percha" class="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" required />
+                  </div>
+                  <div>
+                    <label class="block text-xs text-gray-500 mb-1">Stock Caja</label>
+                    <input v-model.number="app.stock_caja" type="number" min="0" placeholder="Caja" class="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" required />
+                  </div>
+                  <div>
+                    <label class="block text-xs text-gray-500 mb-1">Línea</label>
+                    <input v-model.number="app.linea" type="number" min="0" placeholder="Línea" class="w-20 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" required />
+                  </div>
+                  <div>
+                    <label class="block text-xs text-gray-500 mb-1">Código Aplicación</label>
+                    <input v-model="app.codigo_aplicacion" placeholder="Código único" class="w-32 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" required />
+                  </div>
+                  <button type="button" @click="editado.aplicaciones.splice(idx,1)" class="text-red-500 hover:text-red-700 font-bold mb-5">✕</button>
+                </div>
+                <button type="button" @click="editado.aplicaciones.push({nombre:'',stock_percha:0,stock_caja:0,linea:0,codigo_aplicacion:''})" class="mt-2 px-4 py-2 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200">+ Agregar Aplicación</button>
               </div>
-              <div class="flex justify-end space-x-3 pt-4">
-                <button 
-                  @click="cancelarEdicion()" 
-                  class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors duration-200"
-                >
-                  <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              <div class="mt-6 flex justify-end gap-2">
+                <button type="button" @click="cancelarEdicion" class="px-6 py-3 rounded-lg border border-gray-400 text-gray-700 bg-white hover:bg-gray-100">Cancelar</button>
+                <button type="submit" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-sm text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors duration-200">
+                  <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                   </svg>
-                  Cancelar
-                </button>
-                <button 
-                  @click="guardarEdicion(producto.id)" 
-                  class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200"
-                >
-                  <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                  </svg>
-                  Guardar
+                  Guardar Cambios
                 </button>
               </div>
-            </div>
+            </form>
+          </div>
+          <div v-else>
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aplicación</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock Percha</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock Caja</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Línea</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código Aplicación</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock Total</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <tr v-for="(app, idx) in producto.aplicaciones" :key="app.id || app.nombre || idx">
+                  <td class="px-4 py-2 whitespace-nowrap">{{ app.nombre }}</td>
+                  <td class="px-4 py-2 whitespace-nowrap font-bold text-gray-800">{{ Number(app.stock_percha) || 0 }}</td>
+                  <td class="px-4 py-2 whitespace-nowrap font-bold text-gray-800">{{ Number(app.stock_caja) || 0 }}</td>
+                  <td class="px-4 py-2 whitespace-nowrap">{{ app.linea }}</td>
+                  <td class="px-4 py-2 whitespace-nowrap">{{ app.codigo_aplicacion }}</td>
+                  <td class="px-4 py-2 whitespace-nowrap font-bold text-orange-700">{{ (Number(app.stock_percha) || 0) + (Number(app.stock_caja) || 0) }}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -284,32 +263,55 @@ export default {
   name: 'ProductosComponent',
   data() {
     return {
-      productos: [],
-      nuevo: { nombre: '', stock: 0 },
-      editando: null,
-      editado: { nombre: '', stock: 0 },
-      busqueda: ''
+  productos: [],
+  nuevo: { codigo: '', tipo: '', aplicaciones: [] },
+  editando: null,
+  editado: { nombre: '', stock: 0, aplicacionesTexto: '' },
+  busqueda: ''
     }
   },
   computed: {
     productosFiltrados() {
       if (!this.busqueda) return this.productos;
-      return this.productos.filter(producto => 
-        producto.nombre.toLowerCase().includes(this.busqueda.toLowerCase())
+      const term = this.busqueda.toLowerCase();
+      return this.productos.filter(producto =>
+        (producto.codigo && producto.codigo.toLowerCase().includes(term)) ||
+        (producto.tipo && producto.tipo.toLowerCase().includes(term)) ||
+        (producto.aplicaciones && producto.aplicaciones.some(app => app.nombre && app.nombre.toLowerCase().includes(term)))
       );
     },
     totalStock() {
-      return this.productos.reduce((total, producto) => total + producto.stock, 0);
+      // Suma el stock total (percha + caja) de todas las aplicaciones de todos los productos
+      return this.productos.reduce((total, producto) => {
+        if (!producto.aplicaciones) return total;
+        return total + producto.aplicaciones.reduce((sum, app) => sum + (Number(app.stock_percha) || 0) + (Number(app.stock_caja) || 0), 0);
+      }, 0);
     },
     productosStockBajo() {
-      return this.productos.filter(producto => producto.stock < 10).length;
+      // Cuenta cuántas aplicaciones tienen stock menor a 10
+      return this.productos.reduce((count, producto) => {
+        if (!producto.aplicaciones) return count;
+        return count + producto.aplicaciones.filter(app => Number(app.stock) < 10).length;
+      }, 0);
     }
   },
   methods: {
     async cargarProductos() {
       try {
         const res = await getProductos();
-        this.productos = res.data;
+        // Mapear aplicaciones para compatibilidad con la UI y mostrar stock correctamente
+        this.productos = res.data.map(p => ({
+          ...p,
+          aplicaciones: Array.isArray(p.aplicaciones)
+            ? p.aplicaciones.map(app => ({
+                nombre: app.nombre,
+                stock_percha: app.stock_percha ?? (app.ProductoAplicacion ? app.ProductoAplicacion.stock_percha : 0),
+                stock_caja: app.stock_caja ?? (app.ProductoAplicacion ? app.ProductoAplicacion.stock_caja : 0),
+                linea: app.linea ?? (app.ProductoAplicacion ? app.ProductoAplicacion.linea : ''),
+                codigo_aplicacion: app.codigo_aplicacion ?? (app.ProductoAplicacion ? app.ProductoAplicacion.codigo_aplicacion : '')
+              }))
+            : []
+        }));
       } catch (error) {
         console.error('Error al cargar productos:', error);
         Swal.fire({
@@ -322,18 +324,34 @@ export default {
     },
     
     async agregarProducto() {
-      if (!this.nuevo.nombre.trim() || this.nuevo.stock < 0) {
+      if (
+        !this.nuevo.codigo ||
+        !this.nuevo.tipo ||
+        !Array.isArray(this.nuevo.aplicaciones) ||
+        this.nuevo.aplicaciones.length === 0 ||
+        this.nuevo.aplicaciones.some(app =>
+          !app.nombre ||
+          app.stock_percha === undefined || app.stock_percha === null || app.stock_percha < 0 ||
+          app.stock_caja === undefined || app.stock_caja === null || app.stock_caja < 0 ||
+          app.linea === undefined || app.linea === null || app.linea === '' ||
+          !app.codigo_aplicacion
+        )
+      ) {
         Swal.fire({
           title: 'Datos incompletos',
-          text: 'Por favor, complete todos los campos correctamente',
+          text: 'Por favor, complete todos los campos correctamente (incluye nombre, stock percha, stock caja, línea y código aplicación en cada aplicación)',
           icon: 'warning',
           confirmButtonColor: '#ea580c'
         });
         return;
       }
       try {
-        await createProducto(this.nuevo);
-        this.nuevo = { nombre: '', stock: 0 };
+        await createProducto({
+          codigo: this.nuevo.codigo,
+          tipo: this.nuevo.tipo,
+          aplicaciones: this.nuevo.aplicaciones
+        });
+        this.nuevo = { codigo: '', tipo: '', aplicaciones: [] };
         await this.cargarProductos();
         Swal.fire({
           title: 'Éxito',
@@ -345,9 +363,18 @@ export default {
         });
       } catch (error) {
         console.error('Error al agregar producto:', error);
+        let mensaje = 'No se pudo agregar el producto';
+        // Detectar error de código repetido
+        if (error.response && error.response.data && typeof error.response.data === 'object') {
+          if (error.response.data.message && error.response.data.message.toLowerCase().includes('codigo') && error.response.data.message.toLowerCase().includes('repetido')) {
+            mensaje = 'El código de producto ya existe. Usa un código único.';
+          }
+        } else if (error.message && error.message.toLowerCase().includes('codigo') && error.message.toLowerCase().includes('repetido')) {
+          mensaje = 'El código de producto ya existe. Usa un código único.';
+        }
         Swal.fire({
           title: 'Error',
-          text: 'No se pudo agregar el producto',
+          text: mensaje,
           icon: 'error',
           confirmButtonColor: '#ea580c'
         });
@@ -392,26 +419,48 @@ export default {
     
     editarProducto(producto) {
       this.editando = producto.id;
-      this.editado = { nombre: producto.nombre, stock: producto.stock };
+      // Copiar todos los campos y aplicaciones para edición completa
+      this.editado = {
+        codigo: producto.codigo,
+        tipo: producto.tipo,
+        aplicaciones: producto.aplicaciones.map(app => ({
+          nombre: app.nombre,
+          stock_percha: app.stock_percha,
+          stock_caja: app.stock_caja,
+          linea: app.linea,
+          codigo_aplicacion: app.codigo_aplicacion
+        }))
+      };
     },
-    
     cancelarEdicion() {
       this.editando = null;
-      this.editado = { nombre: '', stock: 0 };
+      this.editado = { nombre: '', stock: 0, aplicacionesTexto: '' };
     },
-    
     async guardarEdicion(id) {
-      if (!this.editado.nombre.trim() || this.editado.stock < 0) {
+      // Validar campos
+      if (!this.editado.codigo || !this.editado.tipo || !Array.isArray(this.editado.aplicaciones) || this.editado.aplicaciones.length === 0 ||
+        this.editado.aplicaciones.some(app =>
+          !app.nombre ||
+          app.stock_percha === undefined || app.stock_percha === null || app.stock_percha < 0 ||
+          app.stock_caja === undefined || app.stock_caja === null || app.stock_caja < 0 ||
+          app.linea === undefined || app.linea === null || app.linea === '' ||
+          !app.codigo_aplicacion
+        )
+      ) {
         Swal.fire({
           title: 'Datos incompletos',
-          text: 'Por favor, complete todos los campos correctamente',
+          text: 'Por favor, complete todos los campos correctamente (incluye nombre, stock percha, stock caja, línea y código aplicación en cada aplicación)',
           icon: 'warning',
           confirmButtonColor: '#ea580c'
         });
         return;
       }
       try {
-        await updateProducto(id, this.editado);
+        await updateProducto(id, {
+          codigo: this.editado.codigo,
+          tipo: this.editado.tipo,
+          aplicaciones: this.editado.aplicaciones
+        });
         this.cancelarEdicion();
         await this.cargarProductos();
         Swal.fire({

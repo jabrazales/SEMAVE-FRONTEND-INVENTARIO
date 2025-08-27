@@ -48,19 +48,21 @@ export const productoService = {
   // Crear nuevo producto
   createProducto: async (data) => {
     try {
-      // Validaciones básicas
-      if (!data.nombre || data.nombre.trim() === '') {
-        throw new Error('El nombre del producto es requerido');
+      if (!data.codigo || !data.tipo || !Array.isArray(data.aplicaciones) || data.aplicaciones.length === 0) {
+        throw new Error('Faltan datos obligatorios para crear el producto');
       }
-      if (data.stock < 0) {
-        throw new Error('El stock no puede ser negativo');
-      }
-
-      const response = await apiClient.post('/', {
-        ...data,
-        nombre: data.nombre.trim(),
-        fechaCreacion: new Date().toISOString()
-      });
+      const payload = {
+        codigo: data.codigo,
+        tipo: data.tipo,
+        aplicaciones: data.aplicaciones.map(app => ({
+          nombre: app.nombre,
+          stock_percha: Number(app.stock_percha),
+          stock_caja: Number(app.stock_caja),
+          linea: app.linea,
+          codigo_aplicacion: app.codigo_aplicacion
+        }))
+      };
+      const response = await apiClient.post('/', payload);
       return response;
     } catch (error) {
       throw new Error(`Error al crear producto: ${error.message}`);
@@ -71,20 +73,21 @@ export const productoService = {
   updateProducto: async (id, data) => {
     try {
       if (!id) throw new Error('ID es requerido');
-      
-      // Validaciones básicas
-      if (!data.nombre || data.nombre.trim() === '') {
-        throw new Error('El nombre del producto es requerido');
+      if (!data.codigo || !data.tipo || !Array.isArray(data.aplicaciones) || data.aplicaciones.length === 0) {
+        throw new Error('Faltan datos obligatorios para actualizar el producto');
       }
-      if (data.stock < 0) {
-        throw new Error('El stock no puede ser negativo');
-      }
-
-      const response = await apiClient.put(`/${id}`, {
-        ...data,
-        nombre: data.nombre.trim(),
-        fechaActualizacion: new Date().toISOString()
-      });
+      const payload = {
+        codigo: data.codigo,
+        tipo: data.tipo,
+        aplicaciones: data.aplicaciones.map(app => ({
+          nombre: app.nombre,
+          stock_percha: Number(app.stock_percha),
+          stock_caja: Number(app.stock_caja),
+          linea: app.linea,
+          codigo_aplicacion: app.codigo_aplicacion
+        }))
+      };
+      const response = await apiClient.put(`/${id}`, payload);
       return response;
     } catch (error) {
       throw new Error(`Error al actualizar producto: ${error.message}`);
