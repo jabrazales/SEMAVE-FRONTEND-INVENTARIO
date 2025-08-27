@@ -255,6 +255,14 @@
         <h3 class="text-lg font-medium text-gray-900 mb-2">No hay productos registrados</h3>
         <p class="text-gray-500 mb-4">Agregue productos para generar reportes de inventario</p>
       </div>
+
+      <!-- Footer profesional -->
+      <footer class="mt-12 py-6 bg-gradient-to-r from-orange-100 via-gray-50 to-orange-200 border-t border-orange-200 text-center rounded-b-xl shadow-inner">
+        <p class="text-sm text-gray-700 font-medium">
+          Desarrollado por Josue Andres Brazales Cango<br>
+          Ingeniero en Tecnologías de la Información
+        </p>
+      </footer>
     </div>
   </div>
 </template>
