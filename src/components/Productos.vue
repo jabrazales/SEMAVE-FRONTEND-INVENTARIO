@@ -209,20 +209,20 @@
             <table class="min-w-full divide-y divide-gray-200">
               <thead class="bg-gray-50">
                 <tr>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Línea</th>
                   <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aplicación</th>
                   <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock Percha</th>
                   <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock Caja</th>
-                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Línea</th>
                   <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código Aplicación</th>
                   <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock Total</th>
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
                 <tr v-for="(app, idx) in producto.aplicaciones" :key="app.id || app.nombre || idx">
+                  <td class="px-4 py-2 whitespace-nowrap">{{ app.linea }}</td>
                   <td class="px-4 py-2 whitespace-nowrap">{{ app.nombre }}</td>
                   <td class="px-4 py-2 whitespace-nowrap font-bold text-gray-800">{{ Number(app.stock_percha) || 0 }}</td>
                   <td class="px-4 py-2 whitespace-nowrap font-bold text-gray-800">{{ Number(app.stock_caja) || 0 }}</td>
-                  <td class="px-4 py-2 whitespace-nowrap">{{ app.linea }}</td>
                   <td class="px-4 py-2 whitespace-nowrap">{{ app.codigo_aplicacion }}</td>
                   <td class="px-4 py-2 whitespace-nowrap font-bold text-orange-700">{{ (Number(app.stock_percha) || 0) + (Number(app.stock_caja) || 0) }}</td>
                 </tr>
