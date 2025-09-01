@@ -12,6 +12,23 @@
         <p class="text-gray-600 text-lg">Controla entradas y salidas de tu inventario</p>
       </div>
 
+      <!-- Buscador de movimientos -->
+      <div class="mb-8">
+        <div class="max-w-md mx-auto relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+          </div>
+          <input 
+            v-model="busquedaMovimientos" 
+            @input="filtrarMovimientos"
+            placeholder="Buscar movimientos..." 
+            class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900"
+          />
+        </div>
+      </div>
+
       <!-- Formulario de movimiento -->
       <div class="bg-white rounded-xl shadow-lg border border-gray-200 mb-8">
         <div class="px-6 py-4 border-b border-gray-200">
@@ -234,6 +251,39 @@
         </button>
       </div>
     </div>
+    <!-- Botón flotante para movimiento rápido por línea -->
+    <button
+      @click="mostrarFormularioLinea = true"
+      class="fixed bottom-8 right-8 z-50 bg-orange-600 hover:bg-orange-700 text-white rounded-full shadow-lg w-16 h-16 flex items-center justify-center text-3xl"
+      title="Movimiento rápido por línea"
+    >
+      +
+    </button>
+
+    <!-- Modal de movimiento rápido por línea -->
+    <div v-if="mostrarFormularioLinea" class="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+      <div class="bg-white rounded-xl p-8 shadow-lg w-full max-w-md">
+        <h3 class="text-lg font-bold mb-4">Movimiento rápido por línea</h3>
+        <form @submit.prevent="registrarMovimientoPorLinea">
+          <input v-model="lineaRapida" placeholder="Código de línea" class="mb-2 w-full border px-3 py-2 rounded" required />
+          <input v-model.number="cantidadRapida" type="number" min="1" placeholder="Cantidad" class="mb-2 w-full border px-3 py-2 rounded" required />
+          <select v-model="tipoRapido" class="mb-2 w-full border px-3 py-2 rounded" required>
+            <option value="">Tipo</option>
+            <option value="entrada">Entrada</option>
+            <option value="salida">Salida</option>
+          </select>
+          <select v-model="origenDestinoRapido" class="mb-4 w-full border px-3 py-2 rounded" required>
+            <option value="">Origen/Destino</option>
+            <option value="percha">Percha</option>
+            <option value="caja">Caja</option>
+          </select>
+          <div class="flex gap-2">
+            <button type="submit" class="bg-orange-600 text-white px-4 py-2 rounded">Registrar</button>
+            <button type="button" @click="cerrarFormularioLinea" class="bg-gray-300 px-4 py-2 rounded">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -248,10 +298,76 @@ export default {
     return {
       movimientos: [],
       productos: [],
-  nuevo: { productoId: '', aplicacionId: '', tipo: '', cantidad: 0, origen_destino: '' },
-      movimientosFiltrados: []
+      nuevo: { productoId: '', aplicacionId: '', tipo: '', cantidad: 0, origen_destino: '' },
+      movimientosFiltrados: [],
+      busquedaMovimientos: '',
+      mostrarFormularioLinea: false,
+      lineaRapida: '',
+      cantidadRapida: 1,
+      tipoRapido: '',
+      origenDestinoRapido: ''
     }
   },
+    filtrarMovimientos() {
+      const term = this.busquedaMovimientos.trim().toLowerCase();
+      if (!term) {
+        this.movimientosFiltrados = this.movimientos;
+        return;
+      }
+      this.movimientosFiltrados = this.movimientos.filter(m => {
+        const producto = m.Producto || {};
+        const aplicacion = m.Aplicacion || {};
+        return (
+          (producto.codigo && producto.codigo.toLowerCase().includes(term)) ||
+          (producto.tipo && producto.tipo.toLowerCase().includes(term)) ||
+          (aplicacion.nombre && aplicacion.nombre.toLowerCase().includes(term)) ||
+          (m.tipo && m.tipo.toLowerCase().includes(term)) ||
+          (String(m.cantidad).includes(term))
+        );
+      });
+    },
+    cerrarFormularioLinea() {
+      this.mostrarFormularioLinea = false;
+      this.lineaRapida = '';
+      this.cantidadRapida = 1;
+      this.tipoRapido = '';
+      this.origenDestinoRapido = '';
+    },
+
+    async registrarMovimientoPorLinea() {
+      // Buscar producto y aplicación por línea
+      let productoEncontrado = null;
+      let appEncontrada = null;
+      for (const p of this.productos) {
+        if (Array.isArray(p.aplicaciones)) {
+          const app = p.aplicaciones.find(app => String(app.linea) === String(this.lineaRapida));
+          if (app) {
+            productoEncontrado = p;
+            appEncontrada = app;
+            break;
+          }
+        }
+      }
+      if (!productoEncontrado || !appEncontrada) {
+        Swal.fire({
+          title: 'No encontrado',
+          text: 'No se encontró producto/aplicación con esa línea',
+          icon: 'warning',
+          confirmButtonColor: '#ea580c'
+        });
+        return;
+      }
+      // Llenar datos y registrar movimiento
+      this.nuevo = {
+        productoId: productoEncontrado.id,
+        aplicacionId: appEncontrada.id,
+        tipo: this.tipoRapido,
+        cantidad: this.cantidadRapida,
+        origen_destino: this.origenDestinoRapido
+      };
+      await this.registrarMovimiento();
+      this.cerrarFormularioLinea();
+    },
   computed: {
     aplicacionesProductoSeleccionado() {
       const prod = this.productos.find(p => p.id === this.nuevo.productoId);
@@ -265,9 +381,64 @@ export default {
     }
   },
   methods: {
-    aplicacionesProductoSeleccionado() {
-      const prod = this.productos.find(p => p.id === this.nuevo.productoId);
-      return prod && prod.aplicaciones ? prod.aplicaciones : [];
+    filtrarMovimientos() {
+      const term = this.busquedaMovimientos.trim().toLowerCase();
+      if (!term) {
+        this.movimientosFiltrados = this.movimientos;
+        return;
+      }
+      this.movimientosFiltrados = this.movimientos.filter(m => {
+        const producto = m.Producto || {};
+        const aplicacion = m.Aplicacion || {};
+        return (
+          (producto.codigo && producto.codigo.toLowerCase().includes(term)) ||
+          (producto.tipo && producto.tipo.toLowerCase().includes(term)) ||
+          (aplicacion.nombre && aplicacion.nombre.toLowerCase().includes(term)) ||
+          (m.tipo && m.tipo.toLowerCase().includes(term)) ||
+          (String(m.cantidad).includes(term))
+        );
+      });
+    },
+    cerrarFormularioLinea() {
+      this.mostrarFormularioLinea = false;
+      this.lineaRapida = '';
+      this.cantidadRapida = 1;
+      this.tipoRapido = '';
+      this.origenDestinoRapido = '';
+    },
+    async registrarMovimientoPorLinea() {
+      // Buscar producto y aplicación por línea
+      let productoEncontrado = null;
+      let appEncontrada = null;
+      for (const p of this.productos) {
+        if (Array.isArray(p.aplicaciones)) {
+          const app = p.aplicaciones.find(app => String(app.linea) === String(this.lineaRapida));
+          if (app) {
+            productoEncontrado = p;
+            appEncontrada = app;
+            break;
+          }
+        }
+      }
+      if (!productoEncontrado || !appEncontrada) {
+        Swal.fire({
+          title: 'No encontrado',
+          text: 'No se encontró producto/aplicación con esa línea',
+          icon: 'warning',
+          confirmButtonColor: '#ea580c'
+        });
+        return;
+      }
+      // Llenar datos y registrar movimiento
+      this.nuevo = {
+        productoId: productoEncontrado.id,
+        aplicacionId: appEncontrada.id,
+        tipo: this.tipoRapido,
+        cantidad: this.cantidadRapida,
+        origen_destino: this.origenDestinoRapido
+      };
+      await this.registrarMovimiento();
+      this.cerrarFormularioLinea();
     },
     async cargarMovimientos() {
       try {
@@ -284,8 +455,7 @@ export default {
         });
       }
     },
-    
-  async cargarProductos() {
+    async cargarProductos() {
       try {
         const res = await getProductos();
         // Mapear aplicaciones para compatibilidad con la UI y mostrar stock correctamente
@@ -293,6 +463,7 @@ export default {
           ...p,
           aplicaciones: Array.isArray(p.aplicaciones)
             ? p.aplicaciones.map(app => ({
+                ...app,
                 id: app.id,
                 nombre: app.nombre,
                 stock: app.ProductoAplicacion && typeof app.ProductoAplicacion.stock !== 'undefined' ? app.ProductoAplicacion.stock : (app.stock ?? 0)
@@ -309,9 +480,8 @@ export default {
         });
       }
     },
-    
-  async registrarMovimiento() {
-  if (!this.nuevo.productoId || !this.nuevo.aplicacionId || !this.nuevo.tipo || this.nuevo.cantidad <= 0 || !this.nuevo.origen_destino) {
+    async registrarMovimiento() {
+      if (!this.nuevo.productoId || !this.nuevo.aplicacionId || !this.nuevo.tipo || this.nuevo.cantidad <= 0 || !this.nuevo.origen_destino) {
         Swal.fire({
           title: 'Datos incompletos',
           text: 'Por favor, complete todos los campos correctamente',
@@ -348,17 +518,6 @@ export default {
         });
       }
     },
-
-  // ...existing code...
-  watch: {
-    'nuevo.productoId'(nuevoVal, oldVal) {
-      // Limpiar la aplicación seleccionada si se cambia el producto
-      if (nuevoVal !== oldVal) {
-        this.nuevo.aplicacionId = '';
-      }
-    }
-  },
-
     scrollToForm() {
       // Función para scroll hasta el formulario cuando no hay movimientos
       const form = document.querySelector('form');
@@ -367,7 +526,14 @@ export default {
       }
     }
   },
-  
+  watch: {
+    'nuevo.productoId'(nuevoVal, oldVal) {
+      // Limpiar la aplicación seleccionada si se cambia el producto
+      if (nuevoVal !== oldVal) {
+        this.nuevo.aplicacionId = '';
+      }
+    }
+  },
   mounted() {
     this.cargarProductos();
     this.cargarMovimientos();
