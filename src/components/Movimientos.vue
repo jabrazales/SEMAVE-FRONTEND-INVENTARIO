@@ -1,6 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-gray-100 via-gray-50 to-orange-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="min-h-screen bg-gradient-to-br from-gray-100 via-gray-50 to-orange-50 px-4 sm:px-6 lg:px-8 py-8">
       <!-- Header -->
       <div class="text-center mb-8">
         <div class="flex justify-center items-center mb-4">
@@ -252,13 +251,13 @@
       </div>
     </div>
     <!-- Botón flotante para movimiento rápido por línea -->
-    <button
-      @click="mostrarFormularioLinea = true"
-      class="fixed bottom-8 right-8 z-50 bg-orange-600 hover:bg-orange-700 text-white rounded-full shadow-lg w-16 h-16 flex items-center justify-center text-3xl"
-      title="Movimiento rápido por línea"
-    >
-      +
-    </button>
+<button
+  @click="mostrarFormularioLinea = true"
+  class="fixed bottom-28 right-8 z-50 bg-orange-600 hover:bg-orange-700 text-white rounded-full shadow-lg w-16 h-16 flex items-center justify-center text-3xl"
+  title="Movimiento rápido por línea"
+>
+  +
+</button>
 
     <!-- Modal de movimiento rápido por línea -->
     <div v-if="mostrarFormularioLinea" class="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
@@ -284,7 +283,8 @@
         </form>
       </div>
     </div>
-  </div>
+  <!-- Footer -->
+
 </template>
 
 <script>
